@@ -6,7 +6,11 @@ use dyn_bit_field::DynamicBitField;
 mod bit_field;
 mod query;
 
+// Reexport a bunch of stuff
+// (i.e. flatten the hierarchy to make the api easier to use)
 pub use bit_field::BitField;
+pub use query::Query;
+pub use query::Expression;
 pub use query::expressions;
 
 /// This is the main star of this crate.
