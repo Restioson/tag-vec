@@ -29,3 +29,7 @@ pub(crate) fn get_bit<T: BitField>(field: &[T], index: usize) -> bool {
 	let (bit_field_index, local_bit_index) = bitfield_index::<T>(index);
 	field[bit_field_index].get_bit(local_bit_index)
 }
+
+pub(crate) fn new_empty_field<T: BitField>(n_bits: usize) -> Vec<T> {
+	let n_members = 
+}

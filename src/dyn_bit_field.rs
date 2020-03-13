@@ -9,12 +9,24 @@ pub(crate) struct DynamicBitField<T: BitField> {
 	len: usize,
 }
 
-impl<T: BitField + std::fmt::Display> DynamicBitField<T> {
+impl<T: BitField> DynamicBitField<T> {
 	/// Creates a new DynamicBitField
 	pub(crate) fn new() -> DynamicBitField<T> {
 		DynamicBitField {
 			data: Vec::new(),
 			len: 0,
+		}
+	}
+
+	/// Creates a DynamicBitField with n_bits bits set to false
+	pub(crate) fn with_false(n_bits: usize) -> DynamicBitField<T> {
+		let mut data = Vec::with_capacity(1 + (n_bits / T::n_bits()));
+		for _ in 0..(1 + (n_bits / T::n_bits())) {
+			data.push(T::empty());
+		}
+
+		DynamicBitField {
+			data, len: n_bits
 		}
 	}
 
@@ -40,12 +52,15 @@ impl<T: BitField + std::fmt::Display> DynamicBitField<T> {
 		self.data[data_index].set_bit(bit_index, value);
 	}
 
+	pub(crate) fn set_unchecked(&mut self, index: usize, value: bool) {
+		let (data_index, bit_index) = get_indices::<T>(index);
+		self.data[data_index].set_bit(bit_index, value);
+	}
+
 	/// Returns a value at the index.
 	/// Panics if the index is out of bounds 
 	pub(crate) fn get_unchecked(&self, index: usize) -> bool {
 		let (data_index, bit_index) = get_indices::<T>(index);
-
-		// Do the magical bit checking
 		self.data[data_index].get_bit(bit_index)
 	}
 }
