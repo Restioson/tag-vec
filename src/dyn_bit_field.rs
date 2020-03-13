@@ -18,6 +18,10 @@ impl<T: BitField> DynamicBitField<T> {
 		}
 	}
 
+	pub(crate) fn data<'a>(&'a self) -> &'a [T] {
+		&self.data[..]
+	}
+
 	/// Creates a DynamicBitField with n_bits bits set to false
 	pub(crate) fn with_false(n_bits: usize) -> DynamicBitField<T> {
 		let mut data = Vec::with_capacity(1 + (n_bits / T::n_bits()));

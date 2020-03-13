@@ -1,14 +1,14 @@
 use std::collections::HashMap;
 use std::hash::Hash;
 
-// Old
 mod dyn_bit_field;
 use dyn_bit_field::DynamicBitField;
 mod bit_field;
-
-//mod bit_field_helper;
+mod query;
 
 pub use bit_field::BitField;
+use query::Expression;
+pub use query::expressions;
 
 /// This is the main star of this crate.
 /// It is an efficient model of a vector of elements,
@@ -82,6 +82,46 @@ impl<T: Eq + Hash + Clone, F: BitField> TagVec<T, F> {
 		}
 
 		self.len += 1;
+	}
+
+	/// Iterates over all elements who fulfill the given expression.
+	/// The behind the scenes of this function are complete and utter
+	/// black magic code, and that code is indeed very strange.
+	/// Nonetheless, the use of this function is not strange, and in
+	/// fact quite intuitive
+	///
+	/// ```
+	/// use tag_vec::TagVec;
+	///
+	/// // Make it easier to construct an expression
+	/// use tag_vec::expressions::*;
+	///
+	/// // Construct a tag_vec
+	/// let mut tag_vec: TagVec<String> = TagVec::new();
+	/// tag_vec.push(vec!["hello", "world"]);
+	/// tag_vec.push(vec!["rust", "is", "good"]);
+	/// tag_vec.push(vec!["hello", "is", "good"]);
+	/// tag_vec.push(vec!["hello", "rust"]);
+	///
+	/// // Query something
+	/// let mut query = tag_vec.query(tag("hello"));
+   /// // The first element to contain the tag "hello" is number 0
+	/// assert_eq!(query.next(), Some(0)); 
+	/// // ... and so on
+	/// assert_eq!(query.next(), Some(2)); 
+	/// assert_eq!(query.next(), Some(3)); 
+	/// assert_eq!(query.next(), None); // Oops, we ran out!
+	///
+	/// // Query something more complicated
+	/// let mut query = tag_vec.query(and(tag("rust"), tag("good")));
+   /// // Element "1" is the only element with both the "rust" and "good" tags
+	/// assert_eq!(query.next(), Some(1)); 
+	/// assert_eq!(query.next(), None);
+	/// ```
+	pub fn query<'a, Q>(&'a self, expr: query::Expression<'a, Q>) -> query::Query<'a, F>  
+			where Q: ?Sized + Hash + Eq + 'a,
+					T: std::borrow::Borrow<Q> {
+		query::Query::create_from(self, expr)
 	}
 
 	/// Iterates over each tag of an element(an element is considered
@@ -161,5 +201,38 @@ mod tests {
 		assert_eq!(tag_vec.len(), 2);
 		assert!(tag_vec.iter().any(|v| *v == "hello"));
 		assert!(tag_vec.iter().any(|v| *v == "sir"));
+	}
+
+	#[test]
+	fn extreme_queries() {
+		let mut tags = TagVec::<String, u8>::new();
+		tags.push(vec!["hi", "yuh"]);
+		tags.push(vec!["hi2", "yuh"]);
+		tags.push(vec!["hi", "yuh"]);
+		tags.push(vec!["hi", "yuh"]);
+		tags.push(vec!["hi", "yuh"]);
+		tags.push(vec!["hi", "yuh"]);
+		tags.push(vec!["hi", "yuh"]);
+		tags.push(vec!["hi", "yuh"]);
+		tags.push(vec!["hi", "yuh"]);
+		tags.push(vec!["hi", "yuh"]);
+		tags.push(vec!["hi", "yuh"]);
+		tags.push(vec!["hi", "yuh"]);
+		tags.push(vec!["hi2", "yuh"]);
+		tags.push(vec!["hi", "yuh"]);
+		tags.push(vec!["hi", "yuh"]);
+		tags.push(vec!["hi", "yuh"]);
+		tags.push(vec!["hi", "yuh"]);
+		tags.push(vec!["hi", "yuh"]);
+		tags.push(vec!["hi", "yuh"]);
+		tags.push(vec!["hi2", "yuh"]);
+		tags.push(vec!["hi", "yuh"]);
+
+		use super::expressions::*;
+		let contains: Vec<_> = tags.query(tag("hi2")).collect();
+		assert_eq!(contains.len(), 3);
+		assert_eq!(contains[0], 1);
+		assert_eq!(contains[1], 12);
+		assert_eq!(contains[2], 19);
 	}
 }

@@ -1,6 +1,8 @@
+use std::ops::{ BitAnd, BitOr, Not };
+
 /// A trait for a type that can
 /// work as a bitfield.
-pub trait BitField {
+pub trait BitField: BitAnd<Output = Self> + BitOr<Output = Self> + Not<Output = Self> + Sized + Copy {
 	/// Creates a bitfield with no bits
 	/// set
 	fn empty() -> Self;
@@ -19,7 +21,7 @@ pub trait BitField {
 
 /// Implements the BitField trait for a numeric type
 macro_rules! impl_bitfield {
-	($t:ty) => {
+	($t:ty, $bits:expr) => {
 		impl BitField for $t {
 			fn empty() -> Self { 0 }
 
@@ -35,16 +37,17 @@ macro_rules! impl_bitfield {
 				*self & (1 << n) > 0
 			}
 
-			fn n_bits() -> usize { 8 }
+			#[inline(always)]
+			fn n_bits() -> usize { $bits }
 		}
 	}
 }
 
-impl_bitfield!(u8);
-impl_bitfield!(u16);
-impl_bitfield!(u32);
-impl_bitfield!(u64);
-impl_bitfield!(u128);
+impl_bitfield!(u8, 8);
+impl_bitfield!(u16, 16);
+impl_bitfield!(u32, 32);
+impl_bitfield!(u64, 64);
+impl_bitfield!(u128, 128);
 
 #[cfg(test)]
 mod test {
