@@ -1,4 +1,3 @@
-use std::ops::Index;
 use crate::bit_field::BitField;
 
 // TODO: Make the SmallBitField generic
@@ -11,12 +10,13 @@ pub(crate) struct DynamicBitField<T: BitField> {
 
 impl<T: BitField> DynamicBitField<T> {
 	/// Creates a new DynamicBitField
-	pub(crate) fn new() -> DynamicBitField<T> {
-		DynamicBitField {
-			data: Vec::new(),
-			len: 0,
-		}
-	}
+	// Unused for now
+	// pub(crate) fn new() -> DynamicBitField<T> {
+	// 	DynamicBitField {
+	// 		data: Vec::new(),
+	// 		len: 0,
+	// 	}
+	// }
 
 	pub(crate) fn data<'a>(&'a self) -> &'a [T] {
 		&self.data[..]
@@ -56,10 +56,10 @@ impl<T: BitField> DynamicBitField<T> {
 		self.data[data_index].set_bit(bit_index, value);
 	}
 
-	pub(crate) fn set_unchecked(&mut self, index: usize, value: bool) {
-		let (data_index, bit_index) = get_indices::<T>(index);
-		self.data[data_index].set_bit(bit_index, value);
-	}
+	// pub(crate) fn set_unchecked(&mut self, index: usize, value: bool) {
+	// 	let (data_index, bit_index) = get_indices::<T>(index);
+	// 	self.data[data_index].set_bit(bit_index, value);
+	// }
 
 	/// Returns a value at the index.
 	/// Panics if the index is out of bounds 
@@ -83,7 +83,7 @@ mod test {
 
 	#[test]
 	fn field() {
-		let mut field = DynamicBitField::<u32>::new();
+		let mut field = DynamicBitField::<u32>::with_false(0);
 		field.push(true);
 		field.push(false);
 		field.push(true);

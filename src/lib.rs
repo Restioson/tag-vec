@@ -7,7 +7,6 @@ mod bit_field;
 mod query;
 
 pub use bit_field::BitField;
-use query::Expression;
 pub use query::expressions;
 
 /// This is the main star of this crate.
